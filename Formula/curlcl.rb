@@ -1,9 +1,18 @@
 class Curlcl < Formula
   desc "Curl-compatible command-line HTTP client, and a Common Lisp binding to libcurl"
   homepage "https://github.com/lispnik/curlcl"
-  url "https://github.com/lispnik/curlcl.git", branch: "master"
-  version "0.1.0"
+  # The released tarball rather than master, which is what makes the version
+  # mean anything.  Built from a branch with a pinned version, brew compares
+  # version strings, sees 0.1.0 both sides and never rebuilds -- so `brew
+  # upgrade' is a no-op however far master has moved, and two people installing
+  # on different days get different code calling itself the same release.
+  url "https://github.com/lispnik/curlcl/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "3f9e3b24dc436c24087fcd137dd4d995af957b8acb6a2deb7fdbf3f8929b1b9f"
   license "MIT"
+
+  # For anyone who does want master: brew install --HEAD curlcl, and
+  # brew upgrade --fetch-HEAD to move it on.
+  head "https://github.com/lispnik/curlcl.git", branch: "master"
 
   # SBCL and ocicl are build-only: program-op dumps the Lisp image together
   # with a copy of the SBCL runtime, so the installed binary needs neither.

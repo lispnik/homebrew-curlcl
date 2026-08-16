@@ -22,9 +22,16 @@ brew trust --formula lispnik/curlcl/curlcl
 brew install lispnik/curlcl/curlcl
 ```
 
-The formula builds from `master` with SBCL and [ocicl](https://github.com/ocicl/ocicl);
-neither is needed afterwards, since the Lisp image is dumped with a copy of the
-runtime inside it.
+The formula builds the latest release from source with SBCL and
+[ocicl](https://github.com/ocicl/ocicl); neither is needed afterwards, since the
+Lisp image is dumped with a copy of the SBCL runtime inside it.
+
+For master instead of the last release:
+
+```
+brew install --HEAD curlcl
+brew upgrade --fetch-HEAD curlcl
+```
 
 It depends on Homebrew's `curl` deliberately. curlcl opens libcurl at startup
 rather than linking it, from a search list that begins with Homebrew's keg-only
