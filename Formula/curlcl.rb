@@ -80,24 +80,24 @@ class Curlcl < Formula
 
     bin.install "bin/curlcl"
 
-    # The word list is baked in rather than fetched by calling the binary on
-    # every TAB.  Dynamic is what clingon's own driver does and it cannot go
-    # stale, but starting a 50MB Lisp image costs ~70ms, which is a stutter on
-    # a keypress; and brew regenerates this on every install and upgrade, so
-    # the list matches the binary beside it either way.
+    # Dynamic: the list is asked of the binary at completion time rather than
+    # frozen here.  Through opt_bin, which is the stable symlink -- the Cellar
+    # path carries the version in it and would name a directory that upgrading
+    # takes away.  It costs a process start per TAB, but it cannot be wrong --
+    # a completion baked in at install time describes whatever was installed,
+    # and clingon's own driver works this way for the same reason.
     #
     # Written here rather than sourcing clingon's extras/completions.bash,
-    # which calls _init_completion -- a bash-completion v2 function that is
-    # absent under v1 and under stock macOS bash, where it fails with
+    # which calls _init_completion -- a bash-completion v2 function, absent
+    # under v1 and under stock macOS bash, where it fails with
     # "_init_completion: command not found" and completes nothing.
-    words = Utils.safe_popen_read(bin/"curlcl", "--bash-completions").split.join(" ")
     (bash_completion/"curlcl").write <<~BASH
       _curlcl() {
         local cur="${COMP_WORDS[COMP_CWORD]}"
         # Only options are ours; anything else is a URL or a file, and
         # -o default lets bash fall back to filenames when COMPREPLY is empty.
         case "${cur}" in
-          -*) COMPREPLY=($(compgen -W "#{words}" -- "${cur}")) ;;
+          -*) COMPREPLY=($(compgen -W "$(#{opt_bin}/curlcl --bash-completions 2>/dev/null)" -- "${cur}")) ;;
           *)  COMPREPLY=() ;;
         esac
       }
