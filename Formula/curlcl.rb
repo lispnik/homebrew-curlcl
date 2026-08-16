@@ -6,8 +6,8 @@ class Curlcl < Formula
   # version strings, sees 0.1.0 both sides and never rebuilds -- so `brew
   # upgrade' is a no-op however far master has moved, and two people installing
   # on different days get different code calling itself the same release.
-  url "https://github.com/lispnik/curlcl/archive/refs/tags/v0.1.5.tar.gz"
-  sha256 "20f1f553a0d16d99f75807ac04dc19e241b6f350c6f1b24d66c7726b62bca21d"
+  url "https://github.com/lispnik/curlcl/archive/refs/tags/v0.1.6.tar.gz"
+  sha256 "47fa21857809e76e5d3361de2992c0e10665eee5aa26af2fa115b154f0c1564a"
   license "MIT"
 
   # For anyone who does want master: brew install --HEAD curlcl, and
@@ -17,7 +17,6 @@ class Curlcl < Formula
   # SBCL and ocicl are build-only: program-op dumps the Lisp image together
   # with a copy of the SBCL runtime, so the installed binary needs neither.
   depends_on "ocicl" => :build
-  depends_on "pkgconf" => :build
   depends_on "sbcl" => :build
 
   # curl is not optional here, and not only for the headers.  The binding opens
@@ -26,10 +25,10 @@ class Curlcl < Formula
   # newer one with websockets, rather than the 8.7.1 in the dyld shared cache
   # that has no ws:// at all.  `curlcl -V' prints the one it found.
   depends_on "curl"
-  # cffi-libffi calls through libffi -- the whole reason it exists is that
-  # curl_easy_setopt is variadic and needs a real libffi call on stack-passing
-  # ABIs like Darwin arm64.
-  depends_on "libffi"
+  # No libffi, and no pkgconf either: curlcl used to reach libcurl's variadic
+  # setopt through cffi-libffi, which meant a C toolchain and a grovel step at
+  # build time.  CFFI's own foreign-funcall-varargs does it now, so nothing
+  # here is compiled and the only C library involved is libcurl.
   # Not used by curlcl, but linked into every image SBCL dumps: Homebrew's SBCL
   # is built with core compression, so the runtime carries a reference to
   # libzstd by absolute path.  The ocicl formula in homebrew-core declares this
