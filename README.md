@@ -6,12 +6,19 @@ libcurl it is built on.
 
 ```
 brew tap lispnik/curlcl
+brew trust lispnik/curlcl
 brew install curlcl
 ```
 
-Or in one line, without tapping first:
+`brew trust` is not optional and not specific to this tap: Homebrew refuses to
+load a formula from any third-party tap until you say you trust it, with
+"Refusing to load formula … from untrusted tap". Read
+[the formula](Formula/curlcl.rb) first if you like — it is fifty lines.
+
+Or in one line each, without tapping first:
 
 ```
+brew trust --formula lispnik/curlcl/curlcl
 brew install lispnik/curlcl/curlcl
 ```
 
