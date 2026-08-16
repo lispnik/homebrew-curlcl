@@ -53,14 +53,58 @@ class Curlcl < Formula
     # shared object, and dyld reopens it at startup by soname, which resolves
     # through the shared cache to the system libcurl.  The binary then runs
     # against a different library than the one it was built against, silently.
+    registry = "(asdf:initialize-source-registry " \
+               "(list :source-registry (list :directory (uiop:getcwd)) " \
+               ":inherit-configuration))"
+    runtime = build_home/".local/share/ocicl/ocicl-runtime.lisp"
+
+    # The zsh completions first, because the build after this one ends in
+    # save-lisp-and-die and takes the image with it.  clingon can write a real
+    # compdef -- every option with its description -- but only from Lisp: it
+    # adds a --bash-completions flag to every command automatically and has no
+    # equivalent flag for zsh.
     system "sbcl", "--non-interactive",
-           "--load", build_home/".local/share/ocicl/ocicl-runtime.lisp",
-           "--eval", "(asdf:initialize-source-registry " \
-                     "(list :source-registry (list :directory (uiop:getcwd)) " \
-                     ":inherit-configuration))",
+           "--load", runtime,
+           "--eval", registry,
+           "--eval", "(asdf:load-system :curlcl/cli)",
+           "--eval", "(with-open-file (out #p\"#{buildpath}/_curlcl\" " \
+                     ":direction :output :if-exists :supersede) " \
+                     "(clingon:print-documentation :zsh-completions " \
+                     "(curlcl/cli::command) out))"
+    zsh_completion.install buildpath/"_curlcl"
+
+    system "sbcl", "--non-interactive",
+           "--load", runtime,
+           "--eval", registry,
            "--eval", "(asdf:make :curlcl/cli)"
 
     bin.install "bin/curlcl"
+
+    # The word list is baked in rather than fetched by calling the binary on
+    # every TAB.  Dynamic is what clingon's own driver does and it cannot go
+    # stale, but starting a 50MB Lisp image costs ~70ms, which is a stutter on
+    # a keypress; and brew regenerates this on every install and upgrade, so
+    # the list matches the binary beside it either way.
+    #
+    # Written here rather than sourcing clingon's extras/completions.bash,
+    # which calls _init_completion -- a bash-completion v2 function that is
+    # absent under v1 and under stock macOS bash, where it fails with
+    # "_init_completion: command not found" and completes nothing.
+    words = Utils.safe_popen_read(bin/"curlcl", "--bash-completions").split.join(" ")
+    (bash_completion/"curlcl").write <<~BASH
+      _curlcl() {
+        local cur="${COMP_WORDS[COMP_CWORD]}"
+        # Only options are ours; anything else is a URL or a file, and
+        # -o default lets bash fall back to filenames when COMPREPLY is empty.
+        case "${cur}" in
+          -*) COMPREPLY=($(compgen -W "#{words}" -- "${cur}")) ;;
+          *)  COMPREPLY=() ;;
+        esac
+      }
+      # nospace because the options that take a value are offered as --opt=,
+      # and a space after the = would have to be deleted again.
+      complete -o bashdefault -o default -o nospace -F _curlcl curlcl
+    BASH
   end
 
   test do
