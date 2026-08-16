@@ -6,8 +6,8 @@ class Curlcl < Formula
   # version strings, sees 0.1.0 both sides and never rebuilds -- so `brew
   # upgrade' is a no-op however far master has moved, and two people installing
   # on different days get different code calling itself the same release.
-  url "https://github.com/lispnik/curlcl/archive/refs/tags/v0.1.2.tar.gz"
-  sha256 "7847f1447fd483d0a1509aadc2545f41f34d88b3f40a638e997f12faddafb990"
+  url "https://github.com/lispnik/curlcl/archive/refs/tags/v0.1.3.tar.gz"
+  sha256 "5610c3691081a8a08d6bb140556d1ce28fdb2d7bc039caee25fbef0704984071"
   license "MIT"
 
   # For anyone who does want master: brew install --HEAD curlcl, and
